@@ -6,11 +6,15 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies and fix permissions
+RUN npm ci && \
+    chown -R node:node /app
+
+# Switch to non-root user
+USER node
 
 # Copy source code
-COPY . .
+COPY --chown=node:node . .
 
 # Build the app
 RUN npm run build
