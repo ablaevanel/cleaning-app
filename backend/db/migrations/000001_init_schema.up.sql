@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS services (
     description TEXT,
     price DECIMAL(10,2) NOT NULL,
     duration_minutes INTEGER NOT NULL,
+    image_url TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -26,8 +27,8 @@ CREATE TABLE IF NOT EXISTS orders (
     user_id INTEGER REFERENCES users(id),
     service_id INTEGER REFERENCES services(id),
     status VARCHAR(50) NOT NULL DEFAULT 'pending',
-    scheduled_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    address TEXT NOT NULL,
+    scheduled_at TIMESTAMP WITH TIME ZONE,
+    address TEXT,
     notes TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP

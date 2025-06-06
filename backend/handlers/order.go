@@ -11,7 +11,10 @@ func CreateOrder(c *fiber.Ctx) error {
 	userID := int(c.Locals("userID").(float64))
 
 	var input struct {
-		ServiceID int `json:"service_id"`
+		ServiceID   int       `json:"service_id"`
+		ScheduledAt time.Time `json:"scheduled_at,omitempty"`
+		Address     string    `json:"address,omitempty"`
+		Notes       string    `json:"notes,omitempty"`
 	}
 
 	if err := c.BodyParser(&input); err != nil {
@@ -21,8 +24,8 @@ func CreateOrder(c *fiber.Ctx) error {
 	var orderID int
 	err := db.DB.QueryRow(
 		c.Context(),
-		"INSERT INTO orders (user_id, service_id) VALUES ($1, $2) RETURNING id",
-		userID, input.ServiceID,
+		"INSERT INTO orders (user_id, service_id, scheduled_at, address, notes) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+		userID, input.ServiceID, input.ScheduledAt, input.Address, input.Notes,
 	).Scan(&orderID)
 
 	if err != nil {

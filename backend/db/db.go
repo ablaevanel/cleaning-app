@@ -68,6 +68,15 @@ func Connect() error {
 		return fmt.Errorf("failed to run migrations: %v", err)
 	}
 
+	// Check if services table exists and has data
+	var count int
+	err = DB.QueryRow(context.Background(), "SELECT COUNT(*) FROM services").Scan(&count)
+	if err != nil {
+		log.Printf("Error checking services table: %v", err)
+	} else {
+		log.Printf("Found %d services in the database", count)
+	}
+
 	return nil
 }
 
