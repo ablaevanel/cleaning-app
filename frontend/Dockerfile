@@ -6,14 +6,14 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies and react-scripts globally
-RUN npm ci && \
-    npm install -g react-scripts@5.0.1
+# Install dependencies
+RUN npm ci
 
 # Copy source code
 COPY . .
 
 # Build the app
+ENV NODE_ENV=production
 RUN npm run build
 
 # Production stage
