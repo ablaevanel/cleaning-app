@@ -7,14 +7,15 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm ci && \
+    chmod -R 755 /app/node_modules/.bin
 
 # Copy source code
 COPY . .
 
 # Build the app
 ENV NODE_ENV=production
-RUN npm run build
+RUN npx react-scripts build
 
 # Production stage
 FROM nginx:alpine
