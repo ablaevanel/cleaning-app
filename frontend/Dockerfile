@@ -1,19 +1,19 @@
 # Build stage
-FROM node:18.17.0-slim as build
+FROM node:18.17.0 as build
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies and react-scripts globally
+RUN npm ci && \
+    npm install -g react-scripts@5.0.1
 
 # Copy source code
 COPY . .
 
-# Build the app using explicit shell
-SHELL ["/bin/bash", "-c"]
+# Build the app
 RUN npm run build
 
 # Production stage
