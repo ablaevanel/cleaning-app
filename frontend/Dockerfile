@@ -8,17 +8,11 @@ COPY package*.json ./
 
 # Install dependencies and ensure proper permissions
 RUN npm ci && \
-    chmod -R 755 /app/node_modules && \
-    chown -R node:node /app
-
-# Switch to non-root user
-USER node
-
-# Ensure node_modules/.bin is in PATH
-ENV PATH="/app/node_modules/.bin:${PATH}"
+    chmod -R 777 /app/node_modules && \
+    chmod -R 777 /app/node_modules/.bin
 
 # Copy source code
-COPY --chown=node:node . .
+COPY . .
 
 # Build the app
 RUN npm run build
