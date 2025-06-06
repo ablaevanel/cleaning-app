@@ -1,0 +1,16 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "docker-compose.yml"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 100
+restartPolicyType = "on-failure"
+restartPolicyMaxRetries = 10
+
+[deploy.regions]
+eu-west = 1
+
+[deploy.resources]
+cpu = 2
+memory = 512 
