@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -83,8 +84,36 @@ func IsConnected() bool {
 }
 
 func runMigrations(dsn string) error {
+	// Get the current working directory
+	wd, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("failed to get working directory: %v", err)
+	}
+
+	// Try different possible paths for migrations
+	migrationPaths := []string{
+		filepath.Join(wd, "migrations"),
+		filepath.Join(wd, "db", "migrations"),
+		"/app/migrations",
+		"/app/db/migrations",
+	}
+
+	var migrationPath string
+	for _, path := range migrationPaths {
+		if _, err := os.Stat(path); err == nil {
+			migrationPath = path
+			break
+		}
+	}
+
+	if migrationPath == "" {
+		return fmt.Errorf("migrations directory not found in any of the expected locations")
+	}
+
+	log.Printf("Using migrations from: %s", migrationPath)
+
 	m, err := migrate.New(
-		"file://db/migrations",
+		fmt.Sprintf("file://%s", migrationPath),
 		dsn,
 	)
 	if err != nil {
