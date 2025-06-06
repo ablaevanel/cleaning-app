@@ -3,11 +3,12 @@ package handlers
 import (
 	"cleaning-app/db"
 	"time"
+
 	"github.com/gofiber/fiber/v2"
 )
 
 func CreateOrder(c *fiber.Ctx) error {
-	userID := int(c.Locals("userID").(float64)) 
+	userID := int(c.Locals("userID").(float64))
 
 	var input struct {
 		ServiceID int `json:"service_id"`
@@ -81,9 +82,9 @@ func UpdateOrderStatus(c *fiber.Ctx) error {
 }
 
 func GetMyOrders(c *fiber.Ctx) error {
-    userID := int(c.Locals("userID").(float64))
+	userID := int(c.Locals("userID").(float64))
 
-    rows, err := db.DB.Query(c.Context(), `
+	rows, err := db.DB.Query(c.Context(), `
         SELECT 
             o.id, 
             s.name as service_name, 
@@ -94,69 +95,69 @@ func GetMyOrders(c *fiber.Ctx) error {
         WHERE o.user_id = $1
         ORDER BY o.created_at DESC
     `, userID)
-    if err != nil {
-        return c.Status(500).JSON(fiber.Map{"error": "Ошибка при получении заказов"})
-    }
-    defer rows.Close()
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Ошибка при получении заказов"})
+	}
+	defer rows.Close()
 
-    type OrderResponse struct {
-        ID        int       `json:"id"`
-        Service   string    `json:"service"`
-        Status    string    `json:"status"`
-        CreatedAt time.Time `json:"created_at"`
-    }
+	type OrderResponse struct {
+		ID        int       `json:"id"`
+		Service   string    `json:"service"`
+		Status    string    `json:"status"`
+		CreatedAt time.Time `json:"created_at"`
+	}
 
-    var orders []OrderResponse
-    for rows.Next() {
-        var order OrderResponse
-        if err := rows.Scan(
-            &order.ID,
-            &order.Service,
-            &order.Status,
-            &order.CreatedAt,
-        ); err != nil {
-            continue
-        }
-        orders = append(orders, order)
-    }
+	var orders []OrderResponse
+	for rows.Next() {
+		var order OrderResponse
+		if err := rows.Scan(
+			&order.ID,
+			&order.Service,
+			&order.Status,
+			&order.CreatedAt,
+		); err != nil {
+			continue
+		}
+		orders = append(orders, order)
+	}
 
-    if orders == nil {
-        orders = []OrderResponse{}
-    }
+	if orders == nil {
+		orders = []OrderResponse{}
+	}
 
-    return c.JSON(orders)
+	return c.JSON(orders)
 }
 
 func DeleteOrder(c *fiber.Ctx) error {
-    userID := int(c.Locals("userID").(float64))
-    orderID := c.Params("id")
+	userID := int(c.Locals("userID").(float64))
+	orderID := c.Params("id")
 
-    var status string
-    err := db.DB.QueryRow(
-        c.Context(),
-        "SELECT status FROM orders WHERE id = $1 AND user_id = $2",
-        orderID, userID,
-    ).Scan(&status)
+	var status string
+	err := db.DB.QueryRow(
+		c.Context(),
+		"SELECT status FROM orders WHERE id = $1 AND user_id = $2",
+		orderID, userID,
+	).Scan(&status)
 
-    if err != nil {
-        return c.Status(404).JSON(fiber.Map{"error": "Заказ не найден или не принадлежит вам"})
-    }
+	if err != nil {
+		return c.Status(404).JSON(fiber.Map{"error": "Заказ не найден или не принадлежит вам"})
+	}
 
-    if status != "created" {
-        return c.Status(400).JSON(fiber.Map{"error": "Можно удалять только заказы со статусом 'created'"})
-    }
+	if status != "created" {
+		return c.Status(400).JSON(fiber.Map{"error": "Можно удалять только заказы со статусом 'created'"})
+	}
 
-    _, err = db.DB.Exec(
-        c.Context(),
-        "DELETE FROM orders WHERE id = $1",
-        orderID,
-    )
+	_, err = db.DB.Exec(
+		c.Context(),
+		"DELETE FROM orders WHERE id = $1",
+		orderID,
+	)
 
-    if err != nil {
-        return c.Status(500).JSON(fiber.Map{"error": "Ошибка при удалении заказа"})
-    }
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Ошибка при удалении заказа"})
+	}
 
-    return c.JSON(fiber.Map{"message": "Заказ успешно удален"})
+	return c.JSON(fiber.Map{"message": "Заказ успешно удален"})
 }
 
 func DeleteOrderAdmin(c *fiber.Ctx) error {

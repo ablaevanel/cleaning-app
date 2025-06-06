@@ -16,10 +16,10 @@ import (
 
 var DB *pgxpool.Pool
 
-func Connect() {
+func Connect() error {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Ошибка загрузки .env файла")
+		log.Printf("Warning: Error loading .env file: %v", err)
 	}
 
 	dsn := fmt.Sprintf(
@@ -31,20 +31,36 @@ func Connect() {
 		os.Getenv("DB_NAME"),
 	)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	// Try to connect with retries
+	var pool *pgxpool.Pool
+	maxRetries := 5
+	for i := 0; i < maxRetries; i++ {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		pool, err = pgxpool.New(ctx, dsn)
+		cancel()
 
-	pool, err := pgxpool.New(ctx, dsn)
+		if err == nil {
+			break
+		}
+
+		log.Printf("Failed to connect to database (attempt %d/%d): %v", i+1, maxRetries, err)
+		if i < maxRetries-1 {
+			time.Sleep(time.Second * 2)
+		}
+	}
+
 	if err != nil {
-		log.Fatal("Ошибка подключения к базе:", err)
+		return fmt.Errorf("failed to connect to database after %d attempts: %v", maxRetries, err)
 	}
 
 	DB = pool
 
 	// Run migrations
 	if err := runMigrations(dsn); err != nil {
-		log.Fatal("Ошибка выполнения миграций:", err)
+		return fmt.Errorf("failed to run migrations: %v", err)
 	}
+
+	return nil
 }
 
 func IsConnected() bool {
@@ -65,11 +81,11 @@ func runMigrations(dsn string) error {
 		dsn,
 	)
 	if err != nil {
-		return fmt.Errorf("ошибка создания миграции: %v", err)
+		return fmt.Errorf("failed to create migration: %v", err)
 	}
 
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		return fmt.Errorf("ошибка выполнения миграции: %v", err)
+		return fmt.Errorf("failed to run migration: %v", err)
 	}
 
 	return nil

@@ -4,15 +4,23 @@ import (
 	"cleaning-app/db"
 	"cleaning-app/handlers"
 	"cleaning-app/middleware"
+	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 )
 
 func main() {
+	// Initialize database connection
+	if err := db.Connect(); err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+
 	app := fiber.New(fiber.Config{
 		AppName: "Cleaning App API",
 	})
@@ -28,15 +36,17 @@ func main() {
 	// Logger middleware
 	app.Use(logger.New())
 
+	// Recover middleware
+	app.Use(recover.New())
+
 	// Health check
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"status": "ok",
 			"db":     db.IsConnected(),
+			"time":   time.Now().Format(time.RFC3339),
 		})
 	})
-
-	db.Connect()
 
 	// API routes
 	app.Post("/register", handlers.Register)
@@ -58,5 +68,8 @@ func main() {
 		port = "8000"
 	}
 
-	log.Fatal(app.Listen(":" + port))
+	log.Printf("Server starting on port %s", port)
+	if err := app.Listen(fmt.Sprintf(":%s", port)); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }
