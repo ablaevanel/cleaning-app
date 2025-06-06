@@ -7,6 +7,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
@@ -37,6 +40,11 @@ func Connect() {
 	}
 
 	DB = pool
+
+	// Run migrations
+	if err := runMigrations(dsn); err != nil {
+		log.Fatal("Ошибка выполнения миграций:", err)
+	}
 }
 
 func IsConnected() bool {
@@ -49,4 +57,20 @@ func IsConnected() bool {
 
 	err := DB.Ping(ctx)
 	return err == nil
+}
+
+func runMigrations(dsn string) error {
+	m, err := migrate.New(
+		"file://db/migrations",
+		dsn,
+	)
+	if err != nil {
+		return fmt.Errorf("ошибка создания миграции: %v", err)
+	}
+
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		return fmt.Errorf("ошибка выполнения миграции: %v", err)
+	}
+
+	return nil
 }
