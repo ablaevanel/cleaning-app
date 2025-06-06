@@ -1,20 +1,19 @@
 # Build stage
-FROM node:18 as build
+FROM node:18.17.0-slim as build
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies and ensure proper permissions
-RUN npm ci && \
-    chmod -R 777 /app/node_modules && \
-    chmod -R 777 /app/node_modules/.bin
+# Install dependencies
+RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Build the app
+# Build the app using explicit shell
+SHELL ["/bin/bash", "-c"]
 RUN npm run build
 
 # Production stage
