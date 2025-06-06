@@ -22,8 +22,8 @@ func CreateService(c *fiber.Ctx) error {
 
 	err := db.DB.QueryRow(
 		c.Context(),
-		"INSERT INTO services (name, description, price, image_url) VALUES ($1, $2, $3, $4) RETURNING id",
-		s.Name, s.Description, s.Price, s.ImageURL,
+		"INSERT INTO services (name, description, price, duration_minutes, image_url) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+		s.Name, s.Description, s.Price, s.DurationMinutes, s.ImageURL,
 	).Scan(&s.ID)
 
 	if err != nil {
@@ -34,7 +34,7 @@ func CreateService(c *fiber.Ctx) error {
 }
 
 func GetAllServices(c *fiber.Ctx) error {
-	rows, err := db.DB.Query(c.Context(), "SELECT id, name, description, price, image_url FROM services")
+	rows, err := db.DB.Query(c.Context(), "SELECT id, name, description, price, duration_minutes, image_url FROM services")
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Ошибка получения услуг"})
 	}
@@ -43,9 +43,14 @@ func GetAllServices(c *fiber.Ctx) error {
 	var services []models.Service
 	for rows.Next() {
 		var s models.Service
-		if err := rows.Scan(&s.ID, &s.Name, &s.Description, &s.Price, &s.ImageURL); err == nil {
-			services = append(services, s)
+		if err := rows.Scan(&s.ID, &s.Name, &s.Description, &s.Price, &s.DurationMinutes, &s.ImageURL); err != nil {
+			continue
 		}
+		services = append(services, s)
+	}
+
+	if err = rows.Err(); err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Ошибка при чтении данных"})
 	}
 
 	return c.JSON(services)
