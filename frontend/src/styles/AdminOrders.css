@@ -1,0 +1,63 @@
+.admin-orders-container {
+    min-height: calc(100vh - 220px);
+    margin: 0 auto;
+    padding: 2rem;
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    min-height: 80vh;
+}
+
+.admin-orders-container h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #333;
+}
+
+.admin-orders-list {
+    list-style: none;
+    padding: 0;
+}
+
+.admin-order-item {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.3s ease;
+}
+
+.admin-order-item:hover {
+    background-color: #f1f1f1;
+}
+
+.admin-order-item p {
+    margin: 0.5rem 0;
+    color: #444;
+}
+
+.admin-order-item select {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background-color: #fafafa;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+
+.delete-button {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.delete-button:hover {
+    background-color: #c0392b;
+}
