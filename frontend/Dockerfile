@@ -6,12 +6,16 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies and fix permissions
+# Install dependencies and ensure proper permissions
 RUN npm ci && \
+    chmod -R 755 /app/node_modules && \
     chown -R node:node /app
 
 # Switch to non-root user
 USER node
+
+# Ensure node_modules/.bin is in PATH
+ENV PATH="/app/node_modules/.bin:${PATH}"
 
 # Copy source code
 COPY --chown=node:node . .
