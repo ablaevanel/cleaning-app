@@ -29,16 +29,14 @@ func main() {
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     "*",
 		AllowMethods:     "GET,POST,PUT,DELETE,PATCH,OPTIONS",
-		AllowHeaders:     "Origin, Content-Type, Accept, Authorization, X-Requested-With",
-		ExposeHeaders:    "Content-Length",
+		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
 		AllowCredentials: true,
+		ExposeHeaders:    "Content-Length",
 		MaxAge:           300,
 	}))
 
 	// Logger middleware
-	app.Use(logger.New(logger.Config{
-		Format: "[${time}] ${status} - ${method} ${path}\n",
-	}))
+	app.Use(logger.New())
 
 	// Recover middleware
 	app.Use(recover.New())
