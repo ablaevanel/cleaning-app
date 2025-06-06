@@ -6,16 +6,19 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
+# Install dependencies and set up environment
 RUN npm ci && \
-    chmod -R 755 /app/node_modules/.bin
+    chmod -R 755 /app/node_modules/.bin && \
+    export PATH="/app/node_modules/.bin:$PATH"
 
 # Copy source code
 COPY . .
 
 # Build the app
 ENV NODE_ENV=production
-RUN npx react-scripts build
+ENV PATH="/app/node_modules/.bin:${PATH}"
+SHELL ["/bin/bash", "-c"]
+RUN ./node_modules/.bin/react-scripts build
 
 # Production stage
 FROM nginx:alpine
